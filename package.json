@@ -1,0 +1,39 @@
+{
+  "name": "@kjanat/prettier-config",
+  "version": "1.0.0",
+  "description": "My personal Prettier config",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "index.ts",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier . --write",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "prettier-plugin-packagejson": "^2.5.19"
+  },
+  "devDependencies": {
+    "@prettier/plugin-xml": "^3.4.2",
+    "@types/bun": "latest",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.7.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
