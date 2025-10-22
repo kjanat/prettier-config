@@ -15,6 +15,7 @@ const config: Config = {
   plugins: [
     "@prettier/plugin-xml",
     "prettier-plugin-packagejson",
+    "prettier-plugin-sh",
     // Load Tailwind CSS plugin last, always!
     "prettier-plugin-tailwindcss",
   ],

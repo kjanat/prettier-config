@@ -7,99 +7,87 @@ Default to using Bun instead of Node.js.
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
 - Bun automatically loads .env, so don't use dotenv.
 
-## APIs
+## bun pm
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+### version
 
-## Testing
+To display current package version and help:
 
-Use `bun test` to run tests.
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
+```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+bun pm version
 ```
 
-## Frontend
+```txt theme={"theme":{"light":"github-light","dark":"dracula"}}
+bun pm version v1.3.0 (ca7428e9)
+Current package version: v1.0.0
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+Increment:
+  patch      1.0.0 → 1.0.1
+  minor      1.0.0 → 1.1.0
+  major      1.0.0 → 2.0.0
+  prerelease 1.0.0 → 1.0.1-0
+  prepatch   1.0.0 → 1.0.1-0
+  preminor   1.0.0 → 1.1.0-0
+  premajor   1.0.0 → 2.0.0-0
+  from-git   Use version from latest git tag
+  1.2.3      Set specific version
 
-Server:
+Options:
+  --no-git-tag-version Skip git operations
+  --allow-same-version Prevents throwing error if version is the same
+  --message=<val>, -m  Custom commit message, use %s for version substitution
+  --preid=<val>        Prerelease identifier (i.e beta → 1.0.1-beta.0)
+  --force, -f          Bypass dirty git history check
 
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
+Examples:
+  bun pm version patch
+  bun pm version 1.2.3 --no-git-tag-version
+  bun pm version prerelease --preid beta --message "Release beta: %s"
 ```
 
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
+To bump the version in `package.json`:
 
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
+```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+bun pm version patch
 ```
 
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-
-// import .css files directly and it works
-import './index.css';
-
-import { createRoot } from "react-dom/client";
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
+```txt theme={"theme":{"light":"github-light","dark":"dracula"}}
+v1.0.1
 ```
 
-Then, run index.ts
+Supports `patch`, `minor`, `major`, `premajor`, `preminor`, `prepatch`, `prerelease`, `from-git`, or specific versions like `1.2.3`. By default creates git commit and tag unless `--no-git-tag-version` was used to skip.
 
-```sh
-bun --hot ./index.ts
+### pkg
+
+Manage `package.json` data with get, set, delete, and fix operations.
+
+All commands support dot and bracket notation:
+
+```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+scripts.build              # dot notation
+contributors[0]            # array access
+workspaces.0               # dot with numeric index
+scripts[test:watch]        # bracket for special chars
 ```
 
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
+Examples:
+
+```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+# set
+bun pm pkg get name          # single property
+bun pm pkg get name version  # multiple properties
+bun pm pkg get               # entire package.json
+bun pm pkg get scripts.build # nested property
+
+# set
+bun pm pkg set name="my-package"                 # simple property
+bun pm pkg set scripts.test="jest" version=2.0.0 # multiple properties
+bun pm pkg set {"private":"true"} --json         # JSON values with --json flag
+
+# delete
+bun pm pkg delete description                  # single property
+bun pm pkg delete scripts.test contributors[0] # multiple/nested
+
+# fix
+bun pm pkg fix # auto-fix common issues
+```

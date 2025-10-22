@@ -1,0 +1,5 @@
+[install]
+registry = { url = "https://registry.npmjs.org", token = "$NPM_TOKEN" }
+
+[install.security]
+scanner = "bun-osv-scanner"

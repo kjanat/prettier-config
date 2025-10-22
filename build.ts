@@ -1,58 +1,59 @@
 #!/usr/bin/env bun
-import { existsSync } from "node:fs";
-import { rm } from "node:fs/promises";
-import path from "node:path";
+import { readdir } from "node:fs/promises";
 
-const formatFileSize = (bytes: number): string => {
-  const units = ["B", "KB", "MB", "GB"];
-  let size = bytes;
-  let unitIndex = 0;
+const prettierconfig = "./prettier.config.ts";
+const outDir = "./dist";
 
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
-
-  return `${size.toFixed(2)} ${units[unitIndex]}`;
-};
-
-console.log("\n🚀 Starting build process...\n");
-
-const outdir = path.join(process.cwd(), "dist");
-
-if (existsSync(outdir)) {
-  console.log(`🗑️ Cleaning previous build at ${outdir}`);
-  await rm(outdir, { recursive: true, force: true });
+if (!(await Bun.file(prettierconfig).exists())) {
+  console.error(`Error: Entry point '${prettierconfig}' does not exist.`);
+  process.exit(1);
 }
 
-const start = performance.now();
+console.log("🚀 Starting build process...");
 
-const entrypoints = [...new Bun.Glob("**.html").scanSync("src")]
-  .map((a) => path.resolve("src", a))
-  .filter((dir) => !dir.includes("node_modules"));
-console.log(
-  `📄 Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process\n`,
-);
-
-const result = await Bun.build({
-  entrypoints,
-  outdir,
-  minify: true,
+const commonOptions: Omit<Bun.BuildConfig, "format" | "naming"> = {
+  entrypoints: [prettierconfig],
+  outdir: outDir,
   target: "node",
-  sourcemap: "linked",
-  define: { "process.env.NODE_ENV": JSON.stringify("production") },
-  ...cliConfig,
+  minify: false,
+  sourcemap: "external",
+};
+
+const esmBuild = await Bun.build({
+  ...commonOptions,
+  format: "esm",
+  naming: "[dir]/[name].[ext]",
 });
 
-const end = performance.now();
+// Optionally build CJS version too
+const cjsBuild = await Bun.build({
+  ...commonOptions,
+  format: "cjs",
+  naming: "[dir]/[name].cjs",
+});
 
-const outputTable = result.outputs.map((output) => ({
-  File: path.relative(process.cwd(), output.path),
-  Type: output.kind,
-  Size: formatFileSize(output.size),
-}));
+if (!esmBuild.success || !cjsBuild.success) {
+  console.error("❌ Build failed!");
+  process.exit(1);
+}
 
-console.table(outputTable);
-const buildTime = (end - start).toFixed(2);
+console.log("📦 Generated:", esmBuild.outputs[0]?.path);
+console.log("📦 Generated:", cjsBuild.outputs[0]?.path);
 
-console.log(`\n✅ Build completed in ${buildTime}ms\n`);
+console.log("\n🔧 Generating type declarations...");
+const typegenResult = await Bun.$`tsgo --project tsconfig.build.json`;
+if (typegenResult.exitCode !== 0) {
+  console.error("❌ Type generation failed!");
+  process.exit(1);
+}
+
+// Copy .d.ts to .d.cts for CJS compatibility
+const dtsPath = `${outDir}/prettier.config.d.ts`;
+const dctsPath = `${outDir}/prettier.config.d.cts`;
+await Bun.write(dctsPath, await Bun.file(dtsPath).text());
+console.log("📦 Generated CJS types:", dctsPath);
+
+const files = await readdir(outDir, { recursive: true });
+console.log("\n📁 Output files:", files);
+
+console.log("\n✅ Build complete!");

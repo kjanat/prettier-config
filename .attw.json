@@ -1,0 +1,8 @@
+{
+  "profile": "strict",
+  "ignoreRules": [],
+  "summary": true,
+  "emoji": true,
+  "color": true,
+  "format": "auto"
+}
