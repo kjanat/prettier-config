@@ -1,12 +1,18 @@
 {
   "name": "@kjanat/prettier-config",
   "version": "1.0.0",
-  "description": "My personal Prettier config with support for XML/SVG, Tailwind CSS, and package.json formatting",
+  "description": "Shareable Prettier config with all plugins included. Supports XML/SVG, Tailwind CSS, package.json, and shell scripts - no additional installation needed!",
   "keywords": [
     "prettier",
     "prettier-config",
+    "shareable-config",
     "tailwindcss",
-    "xml"
+    "xml",
+    "svg",
+    "packagejson",
+    "shell",
+    "formatting",
+    "zero-config"
   ],
   "homepage": "https://github.com/kjanat/prettier-config#readme",
   "bugs": {
@@ -57,20 +63,19 @@
     "version": "changeset version"
   },
   "dependencies": {
-    "@prettier/plugin-xml": "latest",
-    "prettier-plugin-packagejson": "latest",
+    "@prettier/plugin-xml": "^3.4.2",
+    "prettier-plugin-packagejson": "^2.5.19",
     "prettier-plugin-sh": "^0.18.0",
-    "prettier-plugin-tailwindcss": "latest"
+    "prettier-plugin-tailwindcss": "^0.7.1"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "latest",
-    "@changesets/cli": "latest",
-    "@types/bun": "latest",
-    "@typescript/native-preview": "^7.0.0-dev.20251022.1",
-    "bun-osv-scanner": "^1.0.0",
-    "prettier": "latest",
-    "publint": "latest",
-    "typescript": "latest"
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@changesets/cli": "^2.29.7",
+    "@types/bun": "^1.3.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251106.1",
+    "prettier": "^3.6.2",
+    "publint": "^0.3.15",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "prettier": ">=3.6"
