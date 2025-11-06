@@ -1,9 +1,10 @@
 # @kjanat/prettier-config
 
-A comprehensive, shareable Prettier configuration with built-in support for XML, Tailwind CSS, and package.json formatting. Works seamlessly with Bun, Node.js, CommonJS, ES Modules, and TypeScript projects.
+A comprehensive, shareable Prettier configuration with built-in support for XML, Tailwind CSS, and package.json formatting. All required plugins are included - no additional installation needed! Works seamlessly with Bun, Node.js, CommonJS, ES Modules, and TypeScript projects.
 
 ## Features
 
+- ✨ **Zero Configuration**: All plugins included - just install and use!
 - 🎯 **Universal Compatibility**: Works with ESM, CommonJS, and TypeScript
 - 🚀 **Runtime Support**: Optimized for Bun, Node.js 18+, and modern bundlers
 - 🎨 **Tailwind CSS**: Built-in support with custom function names
@@ -46,7 +47,7 @@ pnpm add -D @kjanat/prettier-config prettier
 Add to your `package.json`:
 
 ```json
-{ "prettier": {"plugins": ["@kjanat/prettier-config"}} }
+{ "prettier": { "plugins": ["@kjanat/prettier-config"] } }
 ```
 
 Or create a `.prettierrc` file:
@@ -115,7 +116,7 @@ export default config;
   "prettier": "@kjanat/prettier-config",
   // Add your overrides
   "semi": false,
-  "printWidth": 100,
+  "printWidth": 100
 }
 ```
 
@@ -123,17 +124,19 @@ export default config;
 
 ### Included Plugins
 
-This configuration includes the following Prettier plugins:
+This configuration includes and bundles the following Prettier plugins (no separate installation required):
 
 - [**@prettier/plugin-xml**](https://github.com/prettier/plugin-xml): XML and SVG formatting
 - [**prettier-plugin-packagejson**](https://github.com/matzkoh/prettier-plugin-packagejson): Sorts and formats package.json files
 - [**prettier-plugin-sh**](https://github.com/un-ts/prettier/tree/master/packages/sh): Shell script formatting
-- [**prettier-plugin-tailwindcss**](https://github.com/tailwindlabs/prettier-plugin-tailwindcss): Sorts Tailwind CSS classes
+- [**prettier-plugin-tailwindcss**][plugin-tailwindcss]: Sorts Tailwind CSS classes
+
+[plugin-tailwindcss]: https://github.com/tailwindlabs/prettier-plugin-tailwindcss
 
 ### Default Settings
 
 ```js
-{
+module.exports = {
   // Tailwind CSS functions
   tailwindFunctions: ["cn", "clsx", "tw"],
 
@@ -149,7 +152,10 @@ This configuration includes the following Prettier plugins:
     { files: ["*.css"], options: { useTabs: true } },
 
     // JSON with comments
-    { files: ["*.jsonc"], options: { parser: "json", trailingComma: "none", useTabs: true } },
+    {
+      files: ["*.jsonc"],
+      options: { parser: "json", trailingComma: "none", useTabs: true },
+    },
 
     // YAML files
     { files: ["*.yaml", "*.yml"], options: { singleQuote: false } },
@@ -162,14 +168,17 @@ This configuration includes the following Prettier plugins:
         useTabs: true,
         bracketSameLine: false,
         singleAttributePerLine: true,
-        xmlSortAttributesByKey: true
-      }
+        xmlSortAttributesByKey: true,
+      },
     },
 
     // HTML files
-    { files: ["*.html"], options: { useTabs: true, xmlWhitespaceSensitivity: "ignore" } }
-  ]
-}
+    {
+      files: ["*.html"],
+      options: { useTabs: true, xmlWhitespaceSensitivity: "ignore" },
+    },
+  ],
+};
 ```
 
 ### Tailwind CSS Configuration
@@ -331,14 +340,17 @@ If you encounter module resolution issues:
 
 ### Plugin Not Working
 
-Ensure all peer dependencies are installed:
+All required plugins are included with this package. You only need to install Prettier itself:
 
 ```sh
-bun add -d prettier \
-  prettier-plugin-packagejson \
-  prettier-plugin-sh \
-  prettier-plugin-tailwindcss \
-  @prettier/plugin-xml
+bun add -d prettier
+```
+
+If you still experience issues, try clearing your node_modules and reinstalling:
+
+```sh
+rm -rf node_modules bun.lock* package-lock.json yarn.lock pnpm-lock.yaml
+bun install
 ```
 
 ### Type Definitions Not Found
@@ -370,7 +382,7 @@ bun test
 
 ### Project Structure
 
-```
+```text
 prettier-config/
 ├── prettier.config.ts    # Source configuration
 ├── dist/                 # Built output
@@ -398,7 +410,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 MIT © kjanat
-
----
-
-Made with ❤️ using [Bun](https://bun.com)

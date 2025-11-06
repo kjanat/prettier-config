@@ -1,3 +1,5 @@
+# Claude instructions
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
@@ -13,11 +15,11 @@ Default to using Bun instead of Node.js.
 
 To display current package version and help:
 
-```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+```bash terminal
 bun pm version
 ```
 
-```txt theme={"theme":{"light":"github-light","dark":"dracula"}}
+```txt
 bun pm version v1.3.0 (ca7428e9)
 Current package version: v1.0.0
 
@@ -47,11 +49,11 @@ Examples:
 
 To bump the version in `package.json`:
 
-```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+```bash terminal
 bun pm version patch
 ```
 
-```txt theme={"theme":{"light":"github-light","dark":"dracula"}}
+```txt
 v1.0.1
 ```
 
@@ -63,7 +65,7 @@ Manage `package.json` data with get, set, delete, and fix operations.
 
 All commands support dot and bracket notation:
 
-```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+```bash terminal
 scripts.build              # dot notation
 contributors[0]            # array access
 workspaces.0               # dot with numeric index
@@ -72,7 +74,7 @@ scripts[test:watch]        # bracket for special chars
 
 Examples:
 
-```bash terminal icon="terminal" theme={"theme":{"light":"github-light","dark":"dracula"}}
+```bash terminal
 # set
 bun pm pkg get name          # single property
 bun pm pkg get name version  # multiple properties
