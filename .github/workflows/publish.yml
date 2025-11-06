@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          registries: |
+            https://registry.npmjs.org/
+            @kjanat:https://npm.pkg.github.com/|$GITHUB_TOKEN
+
+      - name: Install dependencies
+        run: bun ci
+
+      - name: Run tests
+        run: bun test
+
+      - name: Type check
+        run: bun typecheck
+
+      - name: Build
+        run: |
+          bun build prettier.config.ts \
+            --outdir ./out \
+            --root . \
+            --outfile "index.js" \
+            --banner '// yo mama so fat' \
+            --footer '// built with love in SF' \
+            --target node
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: bun run release
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

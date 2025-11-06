@@ -1,7 +1,7 @@
 {
   "name": "@kjanat/prettier-config",
-  "version": "1.0.0",
-  "description": "My personal Prettier config with support for XML/SVG, Tailwind CSS, and package.json formatting",
+  "version": "1.1.0",
+  "description": "Yet another Prettier config",
   "keywords": [
     "prettier",
     "prettier-config",
@@ -18,73 +18,37 @@
   },
   "license": "MIT",
   "author": "kjanat",
-  "sideEffects": false,
   "type": "module",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/prettier.config.d.ts",
-        "default": "./dist/prettier.config.js"
-      },
-      "require": {
-        "types": "./dist/prettier.config.d.cts",
-        "default": "./dist/prettier.config.cjs"
-      }
-    }
-  },
-  "main": "./dist/prettier.config.cjs",
-  "module": "./dist/prettier.config.js",
-  "types": "./dist/prettier.config.d.ts",
+  "exports": "./build/prettier.config.js",
   "files": [
-    "dist",
-    "LICENSE"
+    "build/",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build": "bun build.ts",
-    "build:check": "bun run build && publint && attw --pack .",
-    "build:node": "tsgo --project tsconfig.build.json && bun run build",
-    "clean": "rm -rf dist *.tsbuildinfo",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
-    "prepack": "bun clean && bun run build",
     "prepare": "bun run build",
-    "prepublishOnly": "bun typecheck && bun format && bun build:check",
-    "publish": "bun publish",
-    "publish:dry": "bun publish --dry-run",
-    "release": "changeset publish",
-    "test": "bun test",
-    "typecheck": "tsgo --noEmit",
-    "version": "changeset version"
-  },
-  "dependencies": {
-    "@prettier/plugin-xml": "latest",
-    "prettier-plugin-packagejson": "latest",
-    "prettier-plugin-sh": "^0.18.0",
-    "prettier-plugin-tailwindcss": "latest"
+    "prepublishOnly": "bun typecheck && bun format && bun run build",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "latest",
-    "@changesets/cli": "latest",
-    "@types/bun": "latest",
-    "@typescript/native-preview": "^7.0.0-dev.20251022.1",
-    "bun-osv-scanner": "^1.0.0",
-    "prettier": "latest",
-    "publint": "latest",
-    "typescript": "latest"
+    "@types/bun": "^1.3.2",
+    "bun-osv-scanner": "^2.0.0",
+    "lefthook": "^2.0.3",
+    "prettier": "^3.6.2"
   },
   "peerDependencies": {
-    "prettier": ">=3.6"
+    "@prettier/plugin-xml": "^3.4.2",
+    "prettier-plugin-go-template": "^0.0.15",
+    "prettier-plugin-nginx": "^1.0.3",
+    "prettier-plugin-packagejson": "^2.5.19",
+    "prettier-plugin-prisma": "^5.0.0",
+    "prettier-plugin-sh": "^0.18.0",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "prettier-plugin-toml": "^2.0.6"
   },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
-  },
-  "packageManager": "bun@1.3.0",
-  "engines": {
-    "bun": ">=1.0.0",
-    "node": ">=18.0.0"
-  },
+  "packageManager": "bun@1.3.1",
   "publishConfig": {
     "access": "public"
   }
