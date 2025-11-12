@@ -63,66 +63,25 @@ Or create a `.prettierrc` file:
 
 ### Extending the Configuration
 
-#### ES Modules (.prettierrc.mjs or prettier.config.mjs)
+Create `prettier.config.mjs`:
 
 ```js
 import prettierConfig from "@kjanat/prettier-config";
 
-/**
- * @type {import("prettier").Config}
- */
-const config = {
-  ...prettierConfig,
-  // Your overrides here
-  semi: false,
-  printWidth: 100,
-};
-
-export default config;
+export default { ...prettierConfig, semi: false, printWidth: 100 };
 ```
 
-#### CommonJS (.prettierrc.cjs or prettier.config.cjs)
-
-```js
-const prettierConfig = require("@kjanat/prettier-config");
-
-/**
- * @type {import("prettier").Config}
- */
-module.exports = {
-  ...prettierConfig,
-  // Your overrides here
-  semi: false,
-  printWidth: 100,
-};
-```
-
-#### TypeScript (.prettierrc.ts or prettier.config.ts)
+Or with TypeScript (`prettier.config.ts`):
 
 ```ts
-import prettierConfig from "@kjanat/prettier-config";
 import type { Config } from "prettier";
+import prettierConfig from "@kjanat/prettier-config";
 
-const config: Config = {
+export default {
   ...prettierConfig,
-  // Your overrides here with full type safety
   semi: false,
   printWidth: 100,
 } satisfies Config;
-
-export default config;
-```
-
-#### JSON with Comments (.prettierrc.json or .prettierrc)
-
-```jsonc
-{
-  // Extend the base configuration
-  "prettier": "@kjanat/prettier-config",
-  // Add your overrides
-  "semi": false,
-  "printWidth": 100,
-}
 ```
 
 ## Configuration Details
