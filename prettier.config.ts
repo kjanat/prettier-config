@@ -35,8 +35,22 @@ const config: Config = {
     { files: ["*.yaml", "*.yml"], options: { singleQuote: false } },
     { files: ["*.html"], options: { useTabs: true } },
     {
+      files: "*.xml",
+      options: {
+        parser: "xml",
+        useTabs: true,
+        bracketSameLine: false,
+        singleAttributePerLine: true,
+        xmlSortAttributesByKey: true,
+      },
+    },
+    {
       files: "*.svg",
-      options: { parser: "html", htmlWhitespaceSensitivity: "ignore" },
+      options: {
+        parser: "html",
+        htmlWhitespaceSensitivity: "ignore",
+        useTabs: true,
+      },
     },
     { files: "*.md", options: { proseWrap: "always" } },
   ],
