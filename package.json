@@ -35,8 +35,9 @@
     "prettier-config"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun run build:cjs",
     "build:cjs": "bun build.ts --cjs",
+    "build:esm-only": "bun build.ts",
     "format": "prettier . --write",
     "prepare": "bun run build",
     "prepublishOnly": "bun typecheck && bun run build",

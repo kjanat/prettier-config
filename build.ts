@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { $ } from "bun";
 import { relative } from "node:path";
+import { $ } from "bun";
 import { banner, footer } from "./.notice.yml" with { type: "yaml" };
 
 // Parse CLI flags
