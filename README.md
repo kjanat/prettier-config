@@ -103,9 +103,6 @@ This configuration supports the following Prettier plugins (install as needed):
 
 ```js
 module.exports = {
-  // Tailwind CSS functions
-  tailwindFunctions: ["cn", "clsx", "tw"],
-
   // Object formatting
   objectWrap: "collapse",
 
@@ -126,9 +123,12 @@ module.exports = {
     // YAML files
     { files: ["*.yaml", "*.yml"], options: { singleQuote: false } },
 
-    // XML and SVG files
+    // HTML files
+    { files: ["*.html"], options: { useTabs: true } },
+
+    // XML files
     {
-      files: ["*.xml", "*.svg"],
+      files: "*.xml",
       options: {
         parser: "xml",
         useTabs: true,
@@ -138,31 +138,35 @@ module.exports = {
       },
     },
 
-    // HTML files
+    // SVG files (HTML parser for better whitespace handling)
     {
-      files: ["*.html"],
-      options: { useTabs: true, xmlWhitespaceSensitivity: "ignore" },
+      files: "*.svg",
+      options: {
+        parser: "html",
+        htmlWhitespaceSensitivity: "ignore",
+        useTabs: true,
+      },
     },
+
+    // Markdown files
+    { files: "*.md", options: { proseWrap: "always" } },
   ],
 };
 ```
 
 ### Tailwind CSS Configuration
 
-The configuration includes support for common Tailwind CSS utility functions:
-
-- `cn()` - Common className utility
-- `clsx()` - Conditional classes
-- `tw()` - Tagged template literals
-
-To add more functions, extend the configuration:
+The `prettier-plugin-tailwindcss` plugin is included but requires user
+configuration. To enable Tailwind CSS class sorting with custom utility
+functions:
 
 ```js
 import prettierConfig from "@kjanat/prettier-config";
 
 export default {
   ...prettierConfig,
-  tailwindFunctions: [...prettierConfig.tailwindFunctions, "myCustomFunction"],
+  // Configure your Tailwind utility functions
+  tailwindFunctions: ["cn", "clsx", "tw"],
 };
 ```
 
