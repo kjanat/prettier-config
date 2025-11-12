@@ -128,7 +128,7 @@ export default {
 
     // XML files
     {
-      files: "*.xml",
+      files: ["*.xml"],
       options: {
         parser: "xml",
         useTabs: true,
@@ -140,7 +140,7 @@ export default {
 
     // SVG files (HTML parser for better whitespace handling)
     {
-      files: "*.svg",
+      files: ["*.svg"],
       options: {
         parser: "html",
         htmlWhitespaceSensitivity: "ignore",
@@ -148,11 +148,18 @@ export default {
       },
     },
 
-    // Markdown files
-    { files: "*.md", options: { proseWrap: "always" } },
+    // Markdown files (prose wraps at printWidth)
+    { files: ["*.md"], options: { proseWrap: "always" } },
   ],
 };
 ```
+
+**Notable settings:**
+
+- **SVG files**: Use HTML parser instead of XML for better whitespace handling
+  in inline SVG contexts. May differ from standalone SVG files.
+- **Markdown files**: Prose automatically wraps at `printWidth`
+  (`proseWrap: "always"`). Override with `"preserve"` or `"never"` if preferred.
 
 ### Tailwind CSS Configuration
 
