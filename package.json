@@ -15,8 +15,14 @@
   "types": "./build/prettier.config.d.ts",
   "exports": {
     ".": {
-      "types": "./build/prettier.config.d.ts",
-      "default": "./build/prettier.config.js"
+      "import": {
+        "types": "./build/prettier.config.d.ts",
+        "default": "./build/prettier.config.js"
+      },
+      "require": {
+        "types": "./build/prettier.config.d.cts",
+        "default": "./build/prettier.config.cjs"
+      }
     }
   },
   "files": [
@@ -30,6 +36,7 @@
   ],
   "scripts": {
     "build": "bun build.ts",
+    "build:cjs": "bun build.ts --cjs",
     "format": "prettier . --write",
     "prepare": "bun run build",
     "prepublishOnly": "bun typecheck && bun run build",
