@@ -68,7 +68,7 @@ if (buildCJS) {
 }
 
 // Generate type declarations
-const typegenProc = Bun.spawn([
+const tscFlags = [
   "tsc",
   "prettier.config.ts",
   "--emitDeclarationOnly",
@@ -82,8 +82,9 @@ const typegenProc = Bun.spawn([
   "--target",
   "esnext",
   "--skipLibCheck",
-]);
+];
 
+const typegenProc = Bun.spawn(tscFlags);
 const typgenExit = await typegenProc.exited;
 if (typgenExit !== 0) {
   console.error("Type generation failed");
