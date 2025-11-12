@@ -58,3 +58,6 @@ jobs:
 
       - name: Publish to ${{ matrix.registry }} registry${{ github.event_name == 'pull_request' && ' (dry run)' }}
         run: ${{ matrix.command }} ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
