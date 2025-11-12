@@ -31,7 +31,7 @@ bun add -d \
   @prettier/plugin-xml \
   prettier-plugin-go-template \
   prettier-plugin-nginx \
-  prettier-plugin-packagejson \
+  prettier-plugin-pkg \
   prettier-plugin-prisma \
   prettier-plugin-sh \
   prettier-plugin-tailwindcss \
@@ -50,7 +50,7 @@ Add to `package.json`:
 
 Or create `.prettierrc`:
 
-```json
+```text
 "@kjanat/prettier-config"
 ```
 
@@ -80,7 +80,7 @@ export default { ...prettierConfig, semi: false } satisfies Config;
 - **@prettier/plugin-xml**: XML and SVG formatting
 - **prettier-plugin-go-template**: Go templates
 - **prettier-plugin-nginx**: Nginx configs
-- **prettier-plugin-packagejson**: Sorts package.json
+- **prettier-plugin-pkg**: Sorts package.json
 - **prettier-plugin-prisma**: Prisma schemas
 - **prettier-plugin-sh**: Shell scripts
 - **prettier-plugin-tailwindcss**: Sorts Tailwind classes

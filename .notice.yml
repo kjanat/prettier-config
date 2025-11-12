@@ -2,8 +2,12 @@ banner: |
   /**
     * Copyright © 2025 kjanat
     * All Rights Reserved.
+    *
+    * Just testing out:
+    * https://bun.sh/docs/bundler#banner
+    *     and
+    * https://bun.sh/docs/bundler#footer
     */
 footer: |
   /** Yo mama so fat!
-    * You crazy!
-    */
+    * Yo' crazy! */

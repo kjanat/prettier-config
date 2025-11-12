@@ -6,7 +6,7 @@ import type { Config } from "prettier";
 const config: Config = {
   plugins: [
     "@prettier/plugin-xml",
-    "prettier-plugin-packagejson",
+    "prettier-plugin-pkg",
     "prettier-plugin-sh",
     "prettier-plugin-go-template",
     "prettier-plugin-nginx",
