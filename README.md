@@ -165,7 +165,7 @@ import prettierConfig from "@kjanat/prettier-config";
 
 export default {
   ...prettierConfig,
-  // Configure your Tailwind utility functions
+  // Configure your Tailwind utility functions (Optional)
   tailwindFunctions: ["cn", "clsx", "tw"],
 };
 ```
