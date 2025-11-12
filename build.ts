@@ -29,3 +29,28 @@ if (!artifact) {
 
 const relativePath = relative(process.cwd(), artifact.path);
 console.log(`✓ Built: ${relativePath} (${artifact.size} bytes)`);
+
+// Generate type declarations
+const typegenProc = Bun.spawn([
+  "tsc",
+  "prettier.config.ts",
+  "--emitDeclarationOnly",
+  "--declaration",
+  "--outDir",
+  "./build",
+  "--moduleResolution",
+  "bundler",
+  "--module",
+  "esnext",
+  "--target",
+  "esnext",
+  "--skipLibCheck",
+]);
+
+const typgenExit = await typegenProc.exited;
+if (typgenExit !== 0) {
+  console.error("Type generation failed");
+  process.exit(1);
+}
+
+console.log("✓ Generated type declarations");
