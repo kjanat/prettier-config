@@ -102,7 +102,7 @@ This configuration supports the following Prettier plugins (install as needed):
 ### Default Settings
 
 ```js
-module.exports = {
+export default {
   // Object formatting
   objectWrap: "collapse",
 
