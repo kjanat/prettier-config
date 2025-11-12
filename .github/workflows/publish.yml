@@ -36,14 +36,7 @@ jobs:
         run: bun typecheck
 
       - name: Build
-        run: |
-          bun build prettier.config.ts \
-            --outdir ./out \
-            --root . \
-            --outfile "index.js" \
-            --banner '// yo mama so fat' \
-            --footer '// built with love in SF' \
-            --target node
+        run: bun run build
 
       - name: Create Release Pull Request or Publish
         id: changesets
