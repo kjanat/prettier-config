@@ -1,4 +1,6 @@
-# https://bun.sh/docs/pm/scopes-registries
 [install]
+peer = true
+
+# https://bun.sh/docs/pm/scopes-registries
 registry = { url = "https://registry.npmjs.org", token = "$NPM_TOKEN" }
 lockfile = { save = true }
