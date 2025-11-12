@@ -9,6 +9,7 @@ pnpm-lock.yaml
 # output
 out
 dist
+build
 *.tgz
 
 # code coverage
