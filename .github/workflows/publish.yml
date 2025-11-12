@@ -27,7 +27,6 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version-file: package.json
           registries: |
             https://registry.npmjs.org/|$NPM_TOKEN
             @kjanat:https://npm.pkg.github.com/|$GITHUB_TOKEN
@@ -38,5 +37,5 @@ jobs:
       - name: Audit
         run: bun audit
 
-      - name: Publish to ${{ matrix.registry }} registry${{ github.event_name == 'pull_request' && ' (dry run)' }})
+      - name: Publish to ${{ matrix.registry }} registry${{ github.event_name == 'pull_request' && ' (dry run)' }}
         run: ${{ matrix.command }} ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
