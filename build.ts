@@ -7,7 +7,7 @@ const build = await Bun.build({
   banner: banner,
   footer: footer,
   outdir: "./build",
-  naming: "prettier.config.js",
+  naming: "[name].js",
   target: "node",
   format: "esm",
   minify: { whitespace: true, identifiers: false, syntax: false },
