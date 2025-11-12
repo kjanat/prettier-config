@@ -1,12 +1,4 @@
 import type { Config } from "prettier";
-import type { PluginOptions } from "prettier-plugin-tailwindcss";
-
-/**
- * @see [GitHub tailwindlabs/prettier-plugin-tailwindcss](https://github.com/tailwindlabs/prettier-plugin-tailwindcss?tab=readme-ov-file)
- */
-// const tailwindOptions: PluginOptions = {
-//   tailwindFunctions: ["cn", "clsx", "tw"],
-// };
 
 /**
  * @see [prettier.io/docs](https://prettier.io/docs/configuration)
@@ -23,7 +15,6 @@ const config: Config = {
     // Load Tailwind CSS plugin last, always!
     "prettier-plugin-tailwindcss",
   ],
-  // ...tailwindOptions,
   objectWrap: "collapse",
   experimentalTernaries: true,
   overrides: [
