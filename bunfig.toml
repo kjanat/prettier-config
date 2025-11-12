@@ -1,6 +1,9 @@
 [install]
 peer = true
 
+[install.scopes]
+"@kjanat" = { url = "https://npm.pkg.github.com", token = "$GITHUB_TOKEN" }
+
 # https://bun.sh/docs/pm/scopes-registries
 registry = { url = "https://registry.npmjs.org", token = "$NPM_TOKEN" }
 lockfile = { save = true }

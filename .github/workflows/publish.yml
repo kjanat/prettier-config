@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*"
-  pull_request: {}
+  pull_request:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -12,6 +12,8 @@ jobs:
   audit:
     name: Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -25,23 +27,24 @@ jobs:
       - name: Audit
         run: bun audit
 
-  release:
+  publish:
     name: Publish
     runs-on: ubuntu-latest
     needs: [audit]
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
       id-token: write
+      packages: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
         registry: [npm, github]
         include:
           - registry: npm
-            command: bun publish --access public --registry https://registry.npmjs.org
+            registry-url: https://registry.npmjs.org
           - registry: github
-            command: bun publish --access public --registry https://npm.pkg.github.com
+            registry-url: https://npm.pkg.github.com
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -56,8 +59,22 @@ jobs:
       - name: Install dependencies
         run: bun ci
 
-      - name: Publish to ${{ matrix.registry }} registry${{ github.event_name == 'pull_request' && ' (dry run)' }}
-        run: ${{ matrix.command }} ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
+      - name: Check if version exists in ${{ matrix.registry }}
+        id: version-check
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          PUBLISHED_VERSION=$(bun info @kjanat/prettier-config version latest --registry "${{ matrix.registry-url }}" 2>/dev/null || echo "none")
+          if [[ "$TAG_VERSION" == "$PUBLISHED_VERSION" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Version $TAG_VERSION already published to ${{ matrix.registry }}"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "Will publish version $TAG_VERSION to ${{ matrix.registry }}"
+          fi
+
+      - name: Publish to ${{ matrix.registry }} registry${{ github.event_name != 'push' && ' (dry run)' }}
+        if: steps.version-check.outputs.skip != 'true' || github.event_name != 'push'
+        run: bun publish --access public --registry ${{ matrix.registry-url }} ${{ github.event_name != 'push' && '--dry-run' || '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
