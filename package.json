@@ -26,7 +26,7 @@
     "build": "bun build.ts",
     "format": "prettier . --write",
     "prepare": "bun run build",
-    "prepublishOnly": "bun typecheck && bun format && bun run build",
+    "prepublishOnly": "bun typecheck && bun run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
