@@ -1,19 +1,18 @@
 # @kjanat/prettier-config
 
-Yet another Prettier config.
+Shareable Prettier configuration with plugin support.
 
 ## Features
 
-- 🎯 **Shareable Configuration**: Consistent formatting across projects
-- 🚀 **Runtime Support**: Works with Bun and Node.js 18+
-- 🎨 **Tailwind CSS**: Support for common utility functions
-- 📦 **Package.json**: Formatting with optional plugin
-- 📄 **XML/SVG**: Optional XML and SVG formatting
-- 🔧 **TypeScript**: Full type definitions included
+- 🎯 Consistent formatting across projects
+- 🚀 Bun and Node.js 18+ support
+- 🎨 Tailwind CSS class sorting
+- 📦 Optional plugins for XML, SVG, package.json, shell scripts, and more
+- 🔧 Full TypeScript definitions
 
 ## Installation
 
-### Basic Installation
+### Basic
 
 ```sh
 # Bun
@@ -21,17 +20,11 @@ bun add -d @kjanat/prettier-config prettier
 
 # npm
 npm install --save-dev @kjanat/prettier-config prettier
-
-# yarn
-yarn add --dev @kjanat/prettier-config prettier
-
-# pnpm
-pnpm add -D @kjanat/prettier-config prettier
 ```
 
 ### Optional Plugins
 
-Install plugins as needed for your project:
+Install as needed:
 
 ```sh
 bun add -d \
@@ -47,21 +40,21 @@ bun add -d \
 
 ## Usage
 
-### Basic Usage
+### Basic
 
-Add to your `package.json`:
+Add to `package.json`:
 
 ```json
 { "prettier": "@kjanat/prettier-config" }
 ```
 
-Or create a `.prettierrc` file:
+Or create `.prettierrc`:
 
 ```json
 "@kjanat/prettier-config"
 ```
 
-### Extending the Configuration
+### Extending
 
 Create `prettier.config.mjs`:
 
@@ -77,121 +70,70 @@ Or with TypeScript (`prettier.config.ts`):
 import type { Config } from "prettier";
 import prettierConfig from "@kjanat/prettier-config";
 
-export default {
-  ...prettierConfig,
-  semi: false,
-  printWidth: 100,
-} satisfies Config;
+export default { ...prettierConfig, semi: false } satisfies Config;
 ```
 
-## Configuration Details
+## Configuration
 
 ### Supported Plugins
 
-This configuration supports the following Prettier plugins (install as needed):
-
 - **@prettier/plugin-xml**: XML and SVG formatting
-- **prettier-plugin-go-template**: Go template formatting
-- **prettier-plugin-nginx**: Nginx config formatting
-- **prettier-plugin-packagejson**: Sorts and formats package.json
-- **prettier-plugin-prisma**: Prisma schema formatting
-- **prettier-plugin-sh**: Shell script formatting
-- **prettier-plugin-tailwindcss**: Sorts Tailwind CSS classes
-- **prettier-plugin-toml**: TOML formatting
+- **prettier-plugin-go-template**: Go templates
+- **prettier-plugin-nginx**: Nginx configs
+- **prettier-plugin-packagejson**: Sorts package.json
+- **prettier-plugin-prisma**: Prisma schemas
+- **prettier-plugin-sh**: Shell scripts
+- **prettier-plugin-tailwindcss**: Sorts Tailwind classes
+- **prettier-plugin-toml**: TOML files
 
-### Default Settings
+### Key Settings
 
 ```js
-export default {
-  // Object formatting
+{
   objectWrap: "collapse",
-
-  // Experimental features
   experimentalTernaries: true,
-
-  // File-specific overrides
   overrides: [
-    // CSS files use tabs
+    // CSS, HTML, XML use tabs
     { files: ["*.css"], options: { useTabs: true } },
-
-    // JSON with comments
-    {
-      files: ["*.jsonc"],
-      options: { parser: "json", trailingComma: "none", useTabs: true },
-    },
-
-    // YAML files
-    { files: ["*.yaml", "*.yml"], options: { singleQuote: false } },
-
-    // HTML files
     { files: ["*.html"], options: { useTabs: true } },
 
-    // XML files
+    // SVG uses HTML parser for better whitespace handling
+    {
+      files: ["*.svg"],
+      options: { parser: "html", htmlWhitespaceSensitivity: "ignore", useTabs: true }
+    },
+
+    // Markdown wraps at printWidth
+    { files: ["*.md"], options: { proseWrap: "always" } },
+
+    // XML formatting
     {
       files: ["*.xml"],
       options: {
         parser: "xml",
         useTabs: true,
-        bracketSameLine: false,
         singleAttributePerLine: true,
-        xmlSortAttributesByKey: true,
-      },
-    },
-
-    // SVG files (HTML parser for better whitespace handling)
-    {
-      files: ["*.svg"],
-      options: {
-        parser: "html",
-        htmlWhitespaceSensitivity: "ignore",
-        useTabs: true,
-      },
-    },
-
-    // Markdown files (prose wraps at printWidth)
-    { files: ["*.md"], options: { proseWrap: "always" } },
-  ],
-};
+        xmlSortAttributesByKey: true
+      }
+    }
+  ]
+}
 ```
 
-**Notable settings:**
+**Notable:**
 
-- **SVG files**: Use HTML parser instead of XML for better whitespace handling
-  in inline SVG contexts. May differ from standalone SVG files.
-- **Markdown files**: Prose automatically wraps at `printWidth`
-  (`proseWrap: "always"`). Override with `"preserve"` or `"never"` if preferred.
+- **SVG files**: Use HTML parser instead of XML for better inline SVG handling
+- **Markdown**: Prose wraps at `printWidth` (override with
+  `proseWrap: "preserve"` if needed)
 
-### Tailwind CSS Configuration
+### Tailwind CSS
 
-The `prettier-plugin-tailwindcss` plugin is included but requires user
-configuration. To enable Tailwind CSS class sorting with custom utility
-functions:
+Configure custom utility functions:
 
 ```js
 import prettierConfig from "@kjanat/prettier-config";
 
-export default {
-  ...prettierConfig,
-  // Configure your Tailwind utility functions (Optional)
-  tailwindFunctions: ["cn", "clsx", "tw"],
-};
-```
-
-## Module Support
-
-This package exports ESM only:
-
-```js
-import prettierConfig from "@kjanat/prettier-config";
-```
-
-For TypeScript projects:
-
-```ts
-import prettierConfig from "@kjanat/prettier-config";
-import type { Config } from "prettier";
-
-const myConfig: Config = prettierConfig;
+export default { ...prettierConfig, tailwindFunctions: ["cn", "clsx", "tw"] };
 ```
 
 ## Compatibility
@@ -201,138 +143,40 @@ const myConfig: Config = prettierConfig;
 | Bun         | ≥1.0.0  | ✅      |
 | Node.js     | ≥18.0.0 | ✅      |
 
-**Module System**: ESM only (`.mjs`, `.js`, `.ts`)
+**Module System**: ESM only
 
 ## Scripts
 
 ```sh
-# Build the package
-bun run build
-
-# Run type checking
-bun typecheck
-
-# Format code
-bun run format
+bun run build  # Build package
+bun typecheck  # Type checking
+bun run format # Format code
 ```
-
-## Migration Guide
-
-### From Custom Configuration
-
-1. Install the package:
-
-   ```sh
-   bun add -d @kjanat/prettier-config
-   ```
-
-2. Replace your `.prettierrc` content:
-
-   ```diff
-   - {
-   -   "semi": true,
-   -   "singleQuote": false,
-   -   // ... other options
-   - }
-   + "@kjanat/prettier-config"
-   ```
-
-3. If you need to keep some custom settings, extend instead:
-
-   ```js
-   // .prettierrc.mjs
-   import prettierConfig from "@kjanat/prettier-config";
-
-   export default {
-     ...prettierConfig,
-     // Keep your custom settings
-     semi: false,
-   };
-   ```
-
-### From prettier-config-\* packages
-
-Most shareable configs follow the same pattern. Simply:
-
-1. Uninstall the old config
-2. Install this one
-3. Update the reference in your configuration
 
 ## Troubleshooting
 
-### Module Resolution Issues
-
-If you encounter module resolution issues:
-
-1. **ESM Projects**: Ensure your `package.json` has `"type": "module"`
-2. **CommonJS Projects**: Use the `.cjs` extension for your config file
-3. **TypeScript**: Make sure `moduleResolution` is set to `"bundler"` or
-   `"node16"` in tsconfig.json
-
 ### Plugin Not Working
 
-Plugins are peer dependencies and must be installed separately. Install the
-plugins you need:
+Plugins are peer dependencies. Install required plugins:
 
 ```sh
 bun add -d @prettier/plugin-xml prettier-plugin-tailwindcss
 ```
 
-If you still experience issues, try clearing your node_modules and reinstalling:
+### Module Resolution
 
-```sh
-rm -rf node_modules bun.lock* package-lock.json yarn.lock pnpm-lock.yaml
-bun install
-```
-
-### Type Definitions Not Found
-
-For TypeScript projects, ensure you have:
-
-```sh
-bun add -d typescript @types/node
-```
-
-## Development
-
-### Building from Source
-
-```sh
-# Clone the repository
-git clone https://github.com/kjanat/prettier-config.git
-cd prettier-config
-
-# Install dependencies
-bun install
-
-# Build the package
-bun run build
-
-# Run tests
-bun test
-```
-
-### Project Structure
-
-```text
-prettier-config/
-├── prettier.config.ts    # Source configuration
-├── build/                # Built output
-│   └── prettier.config.js     # ESM output
-├── build.ts              # Build script
-├── package.json          # Package manifest
-└── tsconfig.json         # TypeScript config
-```
+- **ESM**: Add `"type": "module"` to `package.json`
+- **CommonJS**: Use `.cjs` extension for config
+- **TypeScript**: Set `moduleResolution` to `"bundler"` or `"node16"`
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Submit a PR:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Push and open PR
 
 ## License
 
