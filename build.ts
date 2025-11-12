@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { $ } from "bun";
 import { relative } from "node:path";
 import { banner, footer } from "./.notice.yml" with { type: "yaml" };
 
@@ -68,29 +69,7 @@ if (buildCJS) {
 }
 
 // Generate type declarations
-const tscFlags = [
-  "tsc",
-  "prettier.config.ts",
-  "--emitDeclarationOnly",
-  "--declaration",
-  "--outDir",
-  "./build",
-  "--moduleResolution",
-  "bundler",
-  "--module",
-  "esnext",
-  "--target",
-  "esnext",
-  "--skipLibCheck",
-];
-
-const typegenProc = Bun.spawn(tscFlags);
-const typgenExit = await typegenProc.exited;
-if (typgenExit !== 0) {
-  console.error("Type generation failed");
-  process.exit(1);
-}
-
+await $`tsc prettier.config.ts --emitDeclarationOnly --declaration --outDir ./build --moduleResolution bundler --module esnext --target esnext --skipLibCheck`.quiet();
 console.log("✓ Generated type declarations (.d.ts)");
 
 // Generate CJS type declarations if building CJS
