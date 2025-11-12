@@ -12,7 +12,13 @@
   "license": "MIT",
   "packageManager": "bun@1.3.2",
   "main": "./build/prettier.config.js",
-  "exports": "./build/prettier.config.js",
+  "types": "./build/prettier.config.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/prettier.config.d.ts",
+      "default": "./build/prettier.config.js"
+    }
+  },
   "files": [
     "build/",
     "prettier.config.ts",
