@@ -26,7 +26,7 @@ const config: Config = {
     { files: ["*.yaml", "*.yml"], options: { singleQuote: false } },
     { files: ["*.html"], options: { useTabs: true } },
     {
-      files: "*.xml",
+      files: ["*.xml"],
       options: {
         parser: "xml",
         useTabs: true,
@@ -36,14 +36,14 @@ const config: Config = {
       },
     },
     {
-      files: "*.svg",
+      files: ["*.svg"],
       options: {
         parser: "html",
         htmlWhitespaceSensitivity: "ignore",
         useTabs: true,
       },
     },
-    { files: "*.md", options: { proseWrap: "always" } },
+    { files: ["*.md"], options: { proseWrap: "always" } },
   ],
 };
 
