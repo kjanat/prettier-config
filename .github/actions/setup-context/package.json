@@ -1,0 +1,26 @@
+{
+  "name": "setup-context",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "jest --testTimeout 70000",
+    "lint-fix": "eslint **/*.ts --fix",
+    "lint": "eslint **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "format": "prettier --write **/*.ts",
+    "check-all": "concurrently \"npm:format-check\" \"npm:lint\" \"npm:test\" \"npm:build -- -- --noEmit\""
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^24",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@actions/artifact": "^4.0.0",
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.1"
+  },
+  "private": true
+}

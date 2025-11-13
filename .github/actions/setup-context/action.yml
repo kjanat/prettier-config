@@ -4,27 +4,34 @@ version: '0.0.1'
 
 inputs:
   package:
-    description: Package name to check
+    description: NPM package name to check (e.g., '@org/package')
     required: true
   registry-url:
-    description: Registry URL to check against
+    description: NPM registry URL to check against
     required: true
+  tag-prefix:
+    description: Version tag prefix to match
+    required: false
+    default: 'v'
 
 outputs:
   is-tag:
-    description: Whether this is a version tag
+    description: 'Whether this workflow is triggered by a version tag (boolean)'
     value: ${{ steps.setup.outputs.is-tag }}
   tag-version:
-    description: Version from tag
+    description: 'Extracted version from the tag (e.g., "1.2.3" from "v1.2.3")'
     value: ${{ steps.setup.outputs.tag-version }}
   is-published:
-    description: Whether version exists in registry
+    description: 'Whether any version of the package exists in the registry (boolean)'
     value: ${{ steps.setup.outputs.is-published }}
   published-version:
-    description: Published version in registry
+    description: 'Latest published version found in the registry'
     value: ${{ steps.setup.outputs.published-version }}
+  should-publish:
+    description: 'Whether the package should be published (is tag && not already published)'
+    value: ${{ steps.setup.outputs.should-publish }}
   already-published:
-    description: Whether tag version matches published version
+    description: 'Whether the current tag version is already published (boolean)'
     value: ${{ steps.setup.outputs.already-published }}
 
 runs:
@@ -36,59 +43,160 @@ runs:
       env:
         PACKAGE: ${{ inputs.package }}
         REGISTRY_URL: ${{ inputs.registry-url }}
+        TAG_PREFIX: ${{ inputs.tag-prefix }}
       with:
         script: |
+          const package = process.env.PACKAGE;
+          const registryUrl = process.env.REGISTRY_URL;
+          const tagPrefix = process.env.TAG_PREFIX;
+
+          // Validate inputs
+          if (!package) {
+            core.setFailed('Package name is required');
+            return;
+          }
+          if (!registryUrl) {
+            core.setFailed('Registry URL is required');
+            return;
+          }
+
+          // Initialize context
           const ref = context.ref;
-          const isTag = ref.startsWith('refs/tags/v');
-          const tagVersion = isTag ? ref.replace('refs/tags/v', '') : '';
+          const tagPattern = `refs/tags/${tagPrefix}`;
+          const isTag = ref.startsWith(tagPattern);
+          const tagVersion = isTag ? ref.replace(tagPattern, '') : '';
 
+          // Initialize outputs
+          let isPublished = false;
+          let publishedVersion = '';
+          let alreadyPublished = false;
+          let shouldPublish = false;
+
+          // Set basic outputs
           core.setOutput('is-tag', isTag);
+          core.setOutput('tag-version', tagVersion);
 
-          await core.summary
-            .addHeading('📦 Publishing Context', 2)
-            .addRaw(`- **Ref**: \`${ref}\`\n`)
-            .addRaw(`- **Is Tag**: ${isTag}\n`)
-            .write();
+          // Start building summary
+          const summary = core.summary.addHeading('📦 Publishing Context', 2);
+
+          // Add trigger information
+          const triggerInfo = [
+            ['Trigger', isTag ? '🏷️ Version Tag' : '🔀 Branch/PR'],
+            ['Reference', `\`${ref}\``],
+          ];
 
           if (isTag) {
-            core.setOutput('tag-version', tagVersion);
+            triggerInfo.push(['Tag Version', `\`${tagVersion}\``]);
 
-            await core.summary
-              .addRaw(`- **Tag Version**: \`${tagVersion}\`\n`)
-              .write();
-
-            const { exitCode, stdout } = await exec.getExecOutput(
-              'bun',
-              ['info', process.env.PACKAGE, 'version', 'latest', '--registry', process.env.REGISTRY_URL],
-              { ignoreReturnCode: true }
-            );
-
-            if (exitCode === 0 && stdout.trim()) {
-              const publishedVersion = stdout.trim();
-              core.setOutput('is-published', true);
-              core.setOutput('published-version', publishedVersion);
-
-              const alreadyPublished = tagVersion === publishedVersion;
-              core.setOutput('already-published', alreadyPublished);
-
-              await core.summary
-                .addRaw(`- **Published Version**: \`${publishedVersion}\`\n`)
-                .addRaw(`- **Status**: ${alreadyPublished ? '⏭️ Already published' : '✅ Ready to publish'}\n`)
-                .write();
-            } else {
-              core.setOutput('is-published', false);
-              core.setOutput('already-published', false);
-
-              await core.summary
-                .addRaw('- **Published Version**: none\n')
-                .addRaw('- **Status**: ✅ First publish\n')
-                .write();
+            // Validate version format
+            const semverRegex = /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+)?$/;
+            if (!semverRegex.test(tagVersion)) {
+              core.warning(`Tag version "${tagVersion}" doesn't match semver format`);
+              summary.addRaw(`⚠️ **Warning:** Tag version doesn't match semver format\n\n`);
             }
-          } else {
-            core.setOutput('is-published', false);
-            core.setOutput('already-published', false);
 
-            await core.summary
-              .addRaw('- **Status**: ℹ️ Not a version tag\n')
-              .write();
+            // Check registry for existing version
+            try {
+              core.info(`Checking registry for ${package}@${tagVersion}...`);
+
+              const { exitCode, stdout, stderr } = await exec.getExecOutput(
+                'bun',
+                ['info', package, 'version', 'latest', '--registry', registryUrl],
+                { 
+                  ignoreReturnCode: true,
+                  silent: true 
+                }
+              );
+
+              if (exitCode === 0 && stdout.trim()) {
+                publishedVersion = stdout.trim();
+                isPublished = true;
+                alreadyPublished = tagVersion === publishedVersion;
+                shouldPublish = !alreadyPublished;
+
+                core.info(`Found published version: ${publishedVersion}`);
+
+                // Add registry information to summary
+                triggerInfo.push(
+                  ['Registry', `\`${registryUrl}\``],
+                  ['Package', `\`${package}\``],
+                  ['Latest Published', `\`${publishedVersion}\``]
+                );
+
+              } else {
+                // Package not found in registry
+                shouldPublish = true;
+                core.info(`Package ${package} not found in registry`);
+
+                triggerInfo.push(
+                  ['Registry', `\`${registryUrl}\``],
+                  ['Package', `\`${package}\``],
+                  ['Latest Published', '—']
+                );
+              }
+
+            } catch (error) {
+              core.warning(`Failed to check registry: ${error.message}`);
+              summary.addRaw(`⚠️ **Warning:** Failed to check registry\n\n`);
+            }
+          }
+
+          // Add trigger information table
+          summary.addTable([
+            [{data: 'Property', header: true}, {data: 'Value', header: true}],
+            ...triggerInfo
+          ]);
+
+          // Add status section
+          summary.addBreak().addHeading('Status', 3);
+
+          if (!isTag) {
+            summary.addRaw('ℹ️ **Not a version tag** - Publishing skipped for non-tag triggers');
+          } else if (alreadyPublished) {
+            summary.addRaw(`⏭️ **Already Published** - Version \`${tagVersion}\` already exists in registry`);
+          } else if (isPublished) {
+            summary.addRaw(`✅ **Ready to Publish** - Version \`${tagVersion}\` will be published (current: \`${publishedVersion}\`)`);
+          } else {
+            summary.addRaw(`🚀 **First Publish** - Package \`${package}\` will be published for the first time`);
+          }
+
+          // Add next steps hint
+          if (shouldPublish) {
+            summary.addBreak().addBreak();
+            summary.addDetails('Next Steps', 
+              `To publish this package:\n` +
+              `\`\`\`yaml\n` +
+              `- name: Publish to registry\n` +
+              `  if: steps.setup-context.outputs.should-publish == 'true'\n` +
+              `  run: bun publish --registry ${{ inputs.registry-url }}\n` +
+              `\`\`\``
+            );
+          }
+
+          // Set final outputs
+          core.setOutput('is-published', isPublished);
+          core.setOutput('published-version', publishedVersion);
+          core.setOutput('already-published', alreadyPublished);
+          core.setOutput('should-publish', shouldPublish);
+
+          // Write summary once
+          await summary.write();
+
+          // Log outputs for debugging
+          core.startGroup('📊 Publishing Context Outputs');
+          console.log({
+            'is-tag': isTag,
+            'tag-version': tagVersion,
+            'is-published': isPublished,
+            'published-version': publishedVersion,
+            'already-published': alreadyPublished,
+            'should-publish': shouldPublish
+          });
+          core.endGroup();
+
+          // Set appropriate exit message
+          if (shouldPublish && isTag) {
+            core.notice(`Package ${package}@${tagVersion} is ready to be published`);
+          } else if (alreadyPublished) {
+            core.notice(`Package ${package}@${tagVersion} is already published - skipping`);
           }
