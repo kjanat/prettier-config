@@ -1,6 +1,6 @@
 {
   "name": "@kjanat/prettier-config",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Yet another Prettier config",
   "repository": "github:kjanat/prettier-config",
