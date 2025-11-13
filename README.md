@@ -140,8 +140,7 @@ export default { ...prettierConfig, semi: false } satisfies Config;
 **Notable:**
 
 - **SVG files**: Use HTML parser instead of XML for better inline SVG handling
-- **Markdown**: Prose wraps at `printWidth` (override with
-  `proseWrap: "preserve"` if needed)
+- **Markdown**: Prose wraps at `printWidth` (override with `proseWrap: "preserve"` if needed)
 
 ### Tailwind CSS
 

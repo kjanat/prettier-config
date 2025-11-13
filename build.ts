@@ -32,9 +32,7 @@ if (!esmArtifact) {
   process.exit(1);
 }
 
-console.log(
-  `✓ Built ESM: ${relative(process.cwd(), esmArtifact.path)} (${esmArtifact.size} bytes)`,
-);
+console.log(`✓ Built ESM: ${relative(process.cwd(), esmArtifact.path)} (${esmArtifact.size} bytes)`);
 
 // Build CJS (optional)
 if (buildCJS) {
@@ -63,9 +61,7 @@ if (buildCJS) {
     process.exit(1);
   }
 
-  console.log(
-    `✓ Built CJS: ${relative(process.cwd(), cjsArtifact.path)} (${cjsArtifact.size} bytes)`,
-  );
+  console.log(`✓ Built CJS: ${relative(process.cwd(), cjsArtifact.path)} (${cjsArtifact.size} bytes)`);
 }
 
 // Generate type declarations

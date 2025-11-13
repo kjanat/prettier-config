@@ -49,17 +49,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup context
-        id: context
-        uses: kjanat/prettier-config/.github/actions/setup-context@master
-        with:
-          package: "@kjanat/prettier-config"
-          registry-url: ${{ matrix.registry-url }}
-
-      - name: Use outputs
-        if: steps.context.outputs.already-published == 'true'
-        run: echo "Already published!"
-
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -67,25 +56,29 @@ jobs:
             https://registry.npmjs.org/|$NPM_TOKEN
             @kjanat:https://npm.pkg.github.com/|$GITHUB_TOKEN
 
+      - name: Setup publishing context
+        id: context
+        uses: kjanat/prettier-config/.github/actions/setup-context@master
+        with:
+          package: "@kjanat/prettier-config"
+          registry-url: ${{ matrix.registry-url }}
+
       - name: Install dependencies
+        if: steps.context.outputs.should-publish == 'true'
         run: bun ci
 
-      - name: Check if version exists in ${{ matrix.registry }}
-        id: version-check
-        run: |
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          PUBLISHED_VERSION=$(bun info @kjanat/prettier-config version latest --registry "${{ matrix.registry-url }}" 2>/dev/null || echo "none")
-          if [[ "$TAG_VERSION" == "$PUBLISHED_VERSION" ]]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "Version $TAG_VERSION already published to ${{ matrix.registry }}"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "Will publish version $TAG_VERSION to ${{ matrix.registry }}"
-          fi
-
-      - name: Publish to ${{ matrix.registry }} registry${{ github.event_name != 'push' && ' (dry run)' }}
-        if: steps.version-check.outputs.skip != 'true' || github.event_name != 'push'
+      - name: Publish to ${{ matrix.registry }} registry${{ github.event_name != 'push' && ' (dry run)' || '' }}
+        if: steps.context.outputs.should-publish == 'true'
         run: bun publish --access public --registry ${{ matrix.registry-url }} ${{ github.event_name != 'push' && '--dry-run' || '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publishing skipped
+        if: steps.context.outputs.should-publish != 'true'
+        run: |
+          if [[ "${{ steps.context.outputs.is-tag }}" == "true" ]]; then
+            echo "⏭️ Version ${{ steps.context.outputs.tag-version }} already published to ${{ matrix.registry }}"
+          else
+            echo "ℹ️ Not a version tag - skipping ${{ matrix.registry }} publish"
+          fi
