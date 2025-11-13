@@ -1,0 +1,94 @@
+name: Setup Publishing Context
+description: Check if running from tag and if version is already published
+version: '0.0.1'
+
+inputs:
+  package:
+    description: Package name to check
+    required: true
+  registry-url:
+    description: Registry URL to check against
+    required: true
+
+outputs:
+  is-tag:
+    description: Whether this is a version tag
+    value: ${{ steps.setup.outputs.is-tag }}
+  tag-version:
+    description: Version from tag
+    value: ${{ steps.setup.outputs.tag-version }}
+  is-published:
+    description: Whether version exists in registry
+    value: ${{ steps.setup.outputs.is-published }}
+  published-version:
+    description: Published version in registry
+    value: ${{ steps.setup.outputs.published-version }}
+  already-published:
+    description: Whether tag version matches published version
+    value: ${{ steps.setup.outputs.already-published }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup context
+      id: setup
+      uses: actions/github-script@v8
+      env:
+        PACKAGE: ${{ inputs.package }}
+        REGISTRY_URL: ${{ inputs.registry-url }}
+      with:
+        script: |
+          const ref = context.ref;
+          const isTag = ref.startsWith('refs/tags/v');
+          const tagVersion = isTag ? ref.replace('refs/tags/v', '') : '';
+
+          core.setOutput('is-tag', isTag);
+
+          await core.summary
+            .addHeading('📦 Publishing Context', 2)
+            .addRaw(`- **Ref**: \`${ref}\`\n`)
+            .addRaw(`- **Is Tag**: ${isTag}\n`)
+            .write();
+
+          if (isTag) {
+            core.setOutput('tag-version', tagVersion);
+
+            await core.summary
+              .addRaw(`- **Tag Version**: \`${tagVersion}\`\n`)
+              .write();
+
+            const { exitCode, stdout } = await exec.getExecOutput(
+              'bun',
+              ['info', process.env.PACKAGE, 'version', 'latest', '--registry', process.env.REGISTRY_URL],
+              { ignoreReturnCode: true }
+            );
+
+            if (exitCode === 0 && stdout.trim()) {
+              const publishedVersion = stdout.trim();
+              core.setOutput('is-published', true);
+              core.setOutput('published-version', publishedVersion);
+
+              const alreadyPublished = tagVersion === publishedVersion;
+              core.setOutput('already-published', alreadyPublished);
+
+              await core.summary
+                .addRaw(`- **Published Version**: \`${publishedVersion}\`\n`)
+                .addRaw(`- **Status**: ${alreadyPublished ? '⏭️ Already published' : '✅ Ready to publish'}\n`)
+                .write();
+            } else {
+              core.setOutput('is-published', false);
+              core.setOutput('already-published', false);
+
+              await core.summary
+                .addRaw('- **Published Version**: none\n')
+                .addRaw('- **Status**: ✅ First publish\n')
+                .write();
+            }
+          } else {
+            core.setOutput('is-published', false);
+            core.setOutput('already-published', false);
+
+            await core.summary
+              .addRaw('- **Status**: ℹ️ Not a version tag\n')
+              .write();
+          }

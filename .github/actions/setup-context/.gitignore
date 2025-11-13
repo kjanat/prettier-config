@@ -1,0 +1,52 @@
+# dependencies (bun install)
+node_modules
+
+# lock files from other package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# output
+out
+dist
+build
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+.vscode/
+
+node_modules/
+packages/*/node_modules/
+packages/*/lib/
+packages/*/__tests__/_temp/
+.DS_Store
+*.xar
+packages/*/audit.json
+
+*.md
+!README.md

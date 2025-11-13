@@ -17,26 +17,31 @@ Shareable Prettier configuration with plugin support.
 ```sh
 # Bun
 bun add -d @kjanat/prettier-config prettier
-
-# npm
-npm install --save-dev @kjanat/prettier-config prettier
+bun pm pkg set prettier="@kjanat/prettier-config"
 ```
 
-### Optional Plugins
-
-Install as needed:
+<details>
+<summary><code>Other package managers</code></summary>
 
 ```sh
-bun add -d \
-  @prettier/plugin-xml \
-  prettier-plugin-go-template \
-  prettier-plugin-nginx \
-  prettier-plugin-pkg \
-  prettier-plugin-prisma \
-  prettier-plugin-sh \
-  prettier-plugin-tailwindcss \
-  prettier-plugin-toml
+# npm
+npm install --save-dev @kjanat/prettier-config prettier
+npm pkg set prettier="@kjanat/prettier-config"
 ```
+
+```sh
+# pnpm
+pnpm add --save-dev @kjanat/prettier-config prettier​
+pnpm config set --location=prettier "@kjanat/prettier-config"​
+```
+
+```sh
+# yarn
+yarn add @kjanat/prettier-config prettier --dev
+yarn config set prettier "@kjanat/prettier-config"​
+```
+
+</details>
 
 ## Usage
 
@@ -58,9 +63,10 @@ Or create `.prettierrc`:
 
 Create `prettier.config.mjs`:
 
-```js
+```mjs
 import prettierConfig from "@kjanat/prettier-config";
 
+/** @satisfies {Config} */
 export default { ...prettierConfig, semi: false, printWidth: 100 };
 ```
 
@@ -88,6 +94,13 @@ export default { ...prettierConfig, semi: false } satisfies Config;
 
 ### Key Settings
 
+- `CSS`, `HTML`, `XML` use tabs
+- `SVG` uses `HTML` parser for better whitespace handling
+- `Markdown` wraps at `printWidth`
+- `XML`:
+  - Sort attributes by key
+  - Single attribute per line
+
 ```js
 {
   objectWrap: "collapse",
@@ -100,7 +113,11 @@ export default { ...prettierConfig, semi: false } satisfies Config;
     // SVG uses HTML parser for better whitespace handling
     {
       files: ["*.svg"],
-      options: { parser: "html", htmlWhitespaceSensitivity: "ignore", useTabs: true }
+      options: {
+        parser: "html",
+        useTabs: true,
+        htmlWhitespaceSensitivity:"ignore",
+      }
     },
 
     // Markdown wraps at printWidth
@@ -130,10 +147,23 @@ export default { ...prettierConfig, semi: false } satisfies Config;
 
 Configure custom utility functions:
 
-```js
+```mjs
+import type { PluginOptions } from "prettier-plugin-tailwindcss";
 import prettierConfig from "@kjanat/prettier-config";
 
-export default { ...prettierConfig, tailwindFunctions: ["cn", "clsx", "tw"] };
+/**
+ * @satisfies {PluginOptions}
+ * @see https://github.com/tailwindlabs/prettier-plugin-tailwindcss
+ */
+const tailwindOptions = {
+  tailwindFunctions: ["cn", "clsx", "tw"],
+};
+
+/** @satisfies {Config} */
+export default {
+  ...prettierConfig,
+  ...tailwindOptions
+};
 ```
 
 ## Compatibility

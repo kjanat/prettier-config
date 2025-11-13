@@ -49,6 +49,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup context
+        id: context
+        uses: kjanat/prettier-config/.github/actions/setup-context@master
+        with:
+          package: "@kjanat/prettier-config"
+          registry-url: ${{ matrix.registry-url }}
+
+      - name: Use outputs
+        if: steps.context.outputs.already-published == 'true'
+        run: echo "Already published!"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
