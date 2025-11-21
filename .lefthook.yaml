@@ -5,6 +5,4 @@ pre-commit:
       run: bunx pretty-quick --staged --ignore-path .gitignore
       stage_fixed: true
     lint:
-      glob: "*.ts"
       run: bun typecheck
-      stage_fixed: true

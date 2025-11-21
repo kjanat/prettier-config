@@ -17,7 +17,9 @@
  *   GITHUB_REF - Git reference (defaults to current git ref)
  */
 
-import {$} from 'bun'
+import * as core from '@actions/core'
+import * as exec from '@actions/exec'
+import {context} from '@actions/github'
 
 interface SetupContextInputs {
   package: string
@@ -35,48 +37,35 @@ interface SetupContextOutputs {
   alreadyPublished: boolean
 }
 
-// Mock core functionality for local development
-const core = {
-  setFailed: (message: string) => {
-    console.error(`❌ FAILED: ${message}`)
-    process.exit(1)
-  },
-  setOutput: (name: string, value: any) => {
-    console.log(`::set-output name=${name}::${value}`)
-  },
-  warning: (message: string) => {
-    console.warn(`⚠️  WARNING: ${message}`)
-  },
-  info: (message: string) => {
-    console.log(`ℹ️  ${message}`)
-  },
-  notice: (message: string) => {
-    console.log(`📢 ${message}`)
-  },
-  startGroup: (name: string) => {
-    console.log(`\n▶ ${name}`)
-  },
-  endGroup: () => {
-    console.log('')
-  }
-}
-
 async function getGitRef(): Promise<string> {
-  // Try GITHUB_REF env var first
+  // In CI, use GitHub context
+  if (process.env.GITHUB_ACTIONS) {
+    return context.ref
+  }
+
+  // Try GITHUB_REF env var
   if (process.env.GITHUB_REF) {
     return process.env.GITHUB_REF
   }
 
   // Try to get current branch
-  const branch = await $`git symbolic-ref -q HEAD`.nothrow().quiet()
-  if (branch.exitCode === 0 && branch.stdout.toString().trim()) {
-    return branch.stdout.toString().trim()
+  const branch = await exec.getExecOutput(
+    'git',
+    ['symbolic-ref', '-q', 'HEAD'],
+    {ignoreReturnCode: true, silent: true}
+  )
+  if (branch.exitCode === 0 && branch.stdout.trim()) {
+    return branch.stdout.trim()
   }
 
   // Fallback: try to get tag
-  const tag = await $`git describe --tags --exact-match`.nothrow().quiet()
-  if (tag.exitCode === 0 && tag.stdout.toString().trim()) {
-    return `refs/tags/${tag.stdout.toString().trim()}`
+  const tag = await exec.getExecOutput(
+    'git',
+    ['describe', '--tags', '--exact-match'],
+    {ignoreReturnCode: true, silent: true}
+  )
+  if (tag.exitCode === 0 && tag.stdout.trim()) {
+    return `refs/tags/${tag.stdout.trim()}`
   }
 
   return 'refs/heads/main' // Default fallback
@@ -86,14 +75,16 @@ async function checkRegistryVersion(
   packageName: string,
   registryUrl: string
 ): Promise<{exitCode: number; stdout: string; stderr: string}> {
-  const result = await $`bun info ${packageName} version latest --registry ${registryUrl}`
-    .nothrow()
-    .quiet()
+  const result = await exec.getExecOutput(
+    'bun',
+    ['info', packageName, 'version', 'latest', '--registry', registryUrl],
+    {ignoreReturnCode: true, silent: true}
+  )
 
   return {
     exitCode: result.exitCode,
-    stdout: result.stdout.toString(),
-    stderr: result.stderr.toString()
+    stdout: result.stdout.trim(),
+    stderr: result.stderr.trim()
   }
 }
 
@@ -138,53 +129,70 @@ function parseArgs(): SetupContextInputs {
   return inputs as SetupContextInputs
 }
 
-function buildSummaryMarkdown(
+async function buildSummary(
   inputs: SetupContextInputs,
   outputs: SetupContextOutputs,
   triggerInfo: Array<[string, string]>,
   warning?: string
-): string {
-  let summary = '# 📦 Publishing Context\n\n'
+): Promise<void> {
+  // Start building summary
+  core.summary.addHeading('📦 Publishing Context', 2)
 
   if (warning) {
-    summary += `⚠️ **Warning:** ${warning}\n\n`
+    core.summary.addRaw(`\n⚠️ **Warning:** ${warning}\n\n`)
   }
 
   // Add trigger information table
-  summary += '| Property | Value |\n'
-  summary += '|----------|-------|\n'
-  for (const [key, value] of triggerInfo) {
-    summary += `| ${key} | ${value} |\n`
-  }
-  summary += '\n'
+  core.summary.addTable([
+    [
+      {data: 'Property', header: true},
+      {data: 'Value', header: true}
+    ],
+    ...triggerInfo.map(([key, value]) => [key, value])
+  ])
 
   // Add status section
-  summary += '## Status\n\n'
+  core.summary.addBreak().addHeading('Status', 3)
 
   if (!outputs.isTag) {
-    summary +=
+    core.summary.addRaw(
       'ℹ️ **Not a version tag** — Publishing skipped for non-tag triggers\n'
+    )
   } else if (outputs.alreadyPublished) {
-    summary += `⏭️ **Already Published** — Version \`${outputs.tagVersion}\` already exists in registry\n`
+    core.summary.addRaw(
+      `⏭️ **Already Published** — Version \`${outputs.tagVersion}\` already exists in registry\n`
+    )
   } else if (outputs.isPublished) {
-    summary += `✅ **Ready to Publish** — Version \`${outputs.tagVersion}\` will be published (current: \`${outputs.publishedVersion}\`)\n`
+    core.summary.addRaw(
+      `✅ **Ready to Publish** — Version \`${outputs.tagVersion}\` will be published (current: \`${outputs.publishedVersion}\`)\n`
+    )
   } else {
-    summary += `🚀 **First Publish** — Package \`${inputs.package}\` will be published for the first time\n`
+    core.summary.addRaw(
+      `🚀 **First Publish** — Package \`${inputs.package}\` will be published for the first time\n`
+    )
   }
 
   // Add next steps hint
   if (outputs.shouldPublish) {
-    summary += '\n<details>\n<summary>Next Steps</summary>\n\n'
-    summary += 'To publish this package:\n\n'
-    summary += '```yaml\n'
-    summary += '- name: Publish to registry\n'
-    summary += "  if: steps.setup-context.outputs.should-publish == 'true'\n"
-    summary += `  run: bun publish --registry ${inputs.registryUrl}\n`
-    summary += '```\n'
-    summary += '</details>\n'
+    const nextSteps =
+      `To publish this package:\n\n` +
+      `\`\`\`yaml\n` +
+      `- name: Publish to registry\n` +
+      `  if: steps.setup-context.outputs.should-publish == 'true'\n` +
+      `  run: bun publish --registry ${inputs.registryUrl}\n` +
+      `\`\`\`\n`
+
+    core.summary.addBreak().addBreak()
+    core.summary.addDetails('Next Steps', nextSteps)
   }
 
-  return summary
+  // Write to file in CI, print to console locally
+  if (process.env.GITHUB_ACTIONS) {
+    await core.summary.write()
+  } else {
+    console.log('\n' + core.summary.stringify())
+    // Note: Don't call clear() locally as it requires GITHUB_STEP_SUMMARY env var
+  }
 }
 
 async function setupContext(): Promise<void> {
@@ -291,13 +299,7 @@ async function setupContext(): Promise<void> {
   core.setOutput('should-publish', outputs.shouldPublish)
 
   // Build and display summary
-  const summaryMarkdown = buildSummaryMarkdown(
-    inputs,
-    outputs,
-    triggerInfo,
-    versionWarning
-  )
-  console.log('\n' + summaryMarkdown)
+  await buildSummary(inputs, outputs, triggerInfo, versionWarning)
 
   // Log outputs for debugging
   core.startGroup('📊 Publishing Context Outputs')

@@ -39,6 +39,7 @@
     "build:cjs": "bun build.ts --cjs",
     "build:esm-only": "bun build.ts",
     "format": "prettier . --write",
+    "postinstall": "lefthook install",
     "prepare": "bun run build",
     "prepublishOnly": "bun typecheck && bun run build",
     "typecheck": "tsc --noEmit"
