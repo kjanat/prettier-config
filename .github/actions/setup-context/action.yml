@@ -1,6 +1,6 @@
 name: Setup Publishing Context
 description: Check if running from tag and if version is already published
-version: '0.0.1'
+
 
 inputs:
   package:
@@ -102,9 +102,9 @@ runs:
               const { exitCode, stdout, stderr } = await exec.getExecOutput(
                 'bun',
                 ['info', package, 'version', 'latest', '--registry', registryUrl],
-                { 
+                {
                   ignoreReturnCode: true,
-                  silent: true 
+                  silent: true
                 }
               );
 
@@ -118,9 +118,9 @@ runs:
 
                 // Add registry information to summary
                 triggerInfo.push(
-                  ['Registry', `\`${registryUrl}\``],
-                  ['Package', `\`${package}\``],
-                  ['Latest Published', `\`${publishedVersion}\``]
+                  ['Registry', `<code>${registryUrl}</code>`],
+                  ['Package', `<code>${package}</code>`],
+                  ['Latest Published', `<code>${publishedVeion}</code>`]
                 );
 
               } else {
@@ -129,8 +129,8 @@ runs:
                 core.info(`Package ${package} not found in registry`);
 
                 triggerInfo.push(
-                  ['Registry', `\`${registryUrl}\``],
-                  ['Package', `\`${package}\``],
+                  ['Registry', `<code>${registryUUrl}</code>`],
+                  ['Package', `<code>${package}</code>`],
                   ['Latest Published', '—']
                 );
               }
@@ -151,25 +151,25 @@ runs:
           summary.addBreak().addHeading('Status', 3);
 
           if (!isTag) {
-            summary.addRaw('ℹ️ **Not a version tag** - Publishing skipped for non-tag triggers');
+            summary.addRaw(`ℹ️ <b>Not a version tag</b> — Publishing skipped for non-tag triggers`);
           } else if (alreadyPublished) {
-            summary.addRaw(`⏭️ **Already Published** - Version \`${tagVersion}\` already exists in registry`);
+            summary.addRaw(`⏭️ <b>Already Published</b> — Version \u{60}${tagVersion}\u{60} already exists in registry`);
           } else if (isPublished) {
-            summary.addRaw(`✅ **Ready to Publish** - Version \`${tagVersion}\` will be published (current: \`${publishedVersion}\`)`);
+            summary.addRaw(`✅ <b>Ready to Publish</b> — Version \u{60}${tagVersion}\u{60} will be published (current: \u{60}${publishedVersion}\u{60})`);
           } else {
-            summary.addRaw(`🚀 **First Publish** - Package \`${package}\` will be published for the first time`);
+            summary.addRaw(`🚀 <b>First Publish</b> — Package \u{60}${package}\u{60} will be published for the first time`);
           }
 
           // Add next steps hint
           if (shouldPublish) {
             summary.addBreak().addBreak();
-            summary.addDetails('Next Steps', 
-              `To publish this package:\n` +
-              `\`\`\`yaml\n` +
+            summary.addDetails('Next Steps',
+              `To publish this package:\n\n` +
+              `\u{60}\u{60}\u{60}yaml\n` +
               `- name: Publish to registry\n` +
               `  if: steps.setup-context.outputs.should-publish == 'true'\n` +
               `  run: bun publish --registry ${{ inputs.registry-url }}\n` +
-              `\`\`\``
+              `\u{60}\u{60}\u{60}\n`
             );
           }
 
