@@ -39,7 +39,7 @@ runs:
   steps:
     - name: Setup context
       id: setup
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         PACKAGE: ${{ inputs.package }}
         REGISTRY_URL: ${{ inputs.registry-url }}
