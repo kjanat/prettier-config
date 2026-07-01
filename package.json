@@ -17,7 +17,8 @@
     ".": {
       "types": "./build/prettier.config.d.mts",
       "default": "./build/prettier.config.mjs"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "build/",
