@@ -165,7 +165,7 @@ runs:
 
           // Add next steps hint
           if (shouldPublish) {
-            summary.addBreak().addBreak();
+            summary.addBreak();
             summary.addDetails('Next Steps',
               'To publish this package:<br><br><pre><code>' +
               `- name: Publish to registry\n` +
