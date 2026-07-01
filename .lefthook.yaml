@@ -2,7 +2,7 @@ pre-commit:
   parallel: true
   commands:
     prettier:
-      run: bunx pretty-quick --staged --ignore-path .gitignore
+      run: bunx prettier --write --ignore-unknown {staged_files}
       stage_fixed: true
     lint:
       run: bun typecheck

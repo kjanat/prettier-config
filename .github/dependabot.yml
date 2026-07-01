@@ -14,3 +14,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+
+  - package-ecosystem: "bun"
+    directory: "/.github/actions/setup-context"
+    schedule:
+      interval: "monthly"

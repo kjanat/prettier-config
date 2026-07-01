@@ -1,7 +1,6 @@
 name: Setup Publishing Context
 description: Check if running from tag and if version is already published
 
-
 inputs:
   package:
     description: NPM package name to check (e.g., '@org/package')
@@ -39,7 +38,7 @@ runs:
   steps:
     - name: Setup context
       id: setup
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         PACKAGE: ${{ inputs.package }}
         REGISTRY_URL: ${{ inputs.registry-url }}
@@ -120,7 +119,7 @@ runs:
                 triggerInfo.push(
                   ['Registry', `<code>${registryUrl}</code>`],
                   ['Package', `<code>${package}</code>`],
-                  ['Latest Published', `<code>${publishedVeion}</code>`]
+                  ['Latest Published', `<code>${publishedVersion}</code>`]
                 );
 
               } else {
@@ -129,7 +128,7 @@ runs:
                 core.info(`Package ${package} not found in registry`);
 
                 triggerInfo.push(
-                  ['Registry', `<code>${registryUUrl}</code>`],
+                  ['Registry', `<code>${registryUrl}</code>`],
                   ['Package', `<code>${package}</code>`],
                   ['Latest Published', '—']
                 );
@@ -168,7 +167,7 @@ runs:
               `\u{60}\u{60}\u{60}yaml\n` +
               `- name: Publish to registry\n` +
               `  if: steps.setup-context.outputs.should-publish == 'true'\n` +
-              `  run: bun publish --registry ${{ inputs.registry-url }}\n` +
+              `  run: bun publish --registry ${registryUrl}\n` +
               `\u{60}\u{60}\u{60}\n`
             );
           }
