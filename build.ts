@@ -65,7 +65,7 @@ if (buildCJS) {
 }
 
 // Generate type declarations
-await $`tsc prettier.config.ts --emitDeclarationOnly --declaration --outDir ./build --moduleResolution bundler --module esnext --target esnext --skipLibCheck`.quiet();
+await $`tsc prettier.config.ts --ignoreConfig --emitDeclarationOnly --declaration --outDir ./build --moduleResolution bundler --module esnext --target esnext --skipLibCheck`.quiet();
 console.log("✓ Generated type declarations (.d.ts)");
 
 // Generate CJS type declarations if building CJS

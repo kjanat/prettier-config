@@ -103,7 +103,7 @@ export default { ...prettierConfig, semi: false } satisfies Config;
 
 ```js
 {
-  objectWrap: "collapse",
+  objectWrap: "preserve",
   experimentalTernaries: true,
   overrides: [
     // CSS, HTML, XML use tabs
