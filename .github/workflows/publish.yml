@@ -27,86 +27,61 @@ jobs:
       - name: Audit
         run: bun audit
 
-  publish-npm:
-    name: Publish (npm)
+  publish:
+    name: Publish
     runs-on: ubuntu-latest
     needs: [audit]
     permissions:
       contents: read
       id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        registry: [npm, github]
+        include:
+          - registry: npm
+            registry-url: https://registry.npmjs.org
+          - registry: github
+            registry-url: https://npm.pkg.github.com
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          registries: ${{ matrix.registry == 'github' && format('@kjanat:{0}|$GITHUB_TOKEN', matrix.registry-url) || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup publishing context
         id: context
         uses: ./.github/actions/setup-context
         with:
           package: "@kjanat/prettier-config"
-          registry-url: https://registry.npmjs.org
+          registry-url: ${{ matrix.registry-url }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         if: steps.context.outputs.should-publish == 'true'
         run: bun install --frozen-lockfile
 
       - name: Setup Node (npm OIDC trusted publishing)
-        if: steps.context.outputs.should-publish == 'true'
+        if: matrix.registry == 'npm' && steps.context.outputs.should-publish == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: latest
           registry-url: https://registry.npmjs.org
 
       - name: Publish to npm registry${{ github.event_name != 'push' && ' (dry run)' || '' }}
-        if: steps.context.outputs.should-publish == 'true'
+        if: matrix.registry == 'npm' && steps.context.outputs.should-publish == 'true'
         run: npm publish --access public ${{ github.event_name != 'push' && '--dry-run' || '' }}
 
-      - name: Publishing skipped
-        if: steps.context.outputs.should-publish != 'true'
-        run: |
-          if [[ "${{ steps.context.outputs.is-tag }}" == "true" ]]; then
-            echo "⏭️ Version ${{ steps.context.outputs.tag-version }} already published to npm"
-          else
-            echo "ℹ️ Not a version tag - skipping npm publish"
-          fi
-
-  publish-github:
-    name: Publish (github)
-    runs-on: ubuntu-latest
-    needs: [audit]
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          registries: |
-            @kjanat:https://npm.pkg.github.com/|$GITHUB_TOKEN
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup publishing context
-        id: context
-        uses: ./.github/actions/setup-context
-        with:
-          package: "@kjanat/prettier-config"
-          registry-url: https://npm.pkg.github.com
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install dependencies
-        if: steps.context.outputs.should-publish == 'true'
-        run: bun install --frozen-lockfile
-
       - name: Publish to GitHub Packages registry${{ github.event_name != 'push' && ' (dry run)' || '' }}
-        if: steps.context.outputs.should-publish == 'true'
-        run: bun publish --access public --registry https://npm.pkg.github.com ${{ github.event_name != 'push' && '--dry-run' || '' }}
+        if: matrix.registry == 'github' && steps.context.outputs.should-publish == 'true'
+        run: bun publish --access public --registry ${{ matrix.registry-url }} ${{ github.event_name != 'push' && '--dry-run' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -114,7 +89,7 @@ jobs:
         if: steps.context.outputs.should-publish != 'true'
         run: |
           if [[ "${{ steps.context.outputs.is-tag }}" == "true" ]]; then
-            echo "⏭️ Version ${{ steps.context.outputs.tag-version }} already published to GitHub Packages"
+            echo "⏭️ Version ${{ steps.context.outputs.tag-version }} already published to ${{ matrix.registry }}"
           else
-            echo "ℹ️ Not a version tag - skipping GitHub Packages publish"
+            echo "ℹ️ Not a version tag - skipping ${{ matrix.registry }} publish"
           fi
