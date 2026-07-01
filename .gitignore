@@ -40,3 +40,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 .vscode/
 .attw.json
+.github/actions/setup-context/CLAUDE.md
+.github/actions/setup-context/DEVELOPMENT.md
+.github/actions/setup-context/actions_github-script.md
