@@ -81,11 +81,11 @@ runs:
           // Add trigger information
           const triggerInfo = [
             ['Trigger', isTag ? '🏷️ Version Tag' : '🔀 Branch/PR'],
-            ['Reference', `\`${ref}\``],
+            ['Reference', `<code>${ref}</code>`],
           ];
 
           if (isTag) {
-            triggerInfo.push(['Tag Version', `\`${tagVersion}\``]);
+            triggerInfo.push(['Tag Version', `<code>${tagVersion}</code>`]);
 
             // Validate version format
             const semverRegex = /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+)?$/;
@@ -98,17 +98,27 @@ runs:
             try {
               core.info(`Checking registry for ${package}@${tagVersion}...`);
 
-              const { exitCode, stdout, stderr } = await exec.getExecOutput(
-                'bun',
-                ['info', package, 'version', 'latest', '--registry', registryUrl],
-                {
-                  ignoreReturnCode: true,
-                  silent: true
-                }
-              );
+              // NOTE: deliberately not using `bun info`/`npm view` here.
+              // When run from this checkout's own working directory,
+              // both can short-circuit to the local package.json instead
+              // of actually querying the registry when the package name
+              // matches — which made "already published" always true for
+              // this repo regardless of what was really published. Query
+              // the registry's JSON metadata endpoint directly instead.
+              const registryToken = registryUrl.includes('npm.pkg.github.com')
+                ? process.env.GITHUB_TOKEN
+                : process.env.NPM_TOKEN;
+              const metadataUrl = `${registryUrl.replace(/\/$/, '')}/${encodeURIComponent(package)}`;
+              const headers = { Accept: 'application/vnd.npm.install-v1+json, application/json' };
+              if (registryToken) {
+                headers.Authorization = `Bearer ${registryToken}`;
+              }
 
-              if (exitCode === 0 && stdout.trim()) {
-                publishedVersion = stdout.trim();
+              const response = await fetch(metadataUrl, { headers });
+              const latest = response.ok ? (await response.json())?.['dist-tags']?.latest : undefined;
+
+              if (response.status !== 404 && response.ok && latest) {
+                publishedVersion = latest;
                 isPublished = true;
                 alreadyPublished = tagVersion === publishedVersion;
                 shouldPublish = !alreadyPublished;
