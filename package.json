@@ -11,18 +11,12 @@
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "license": "MIT",
   "packageManager": "bun@1.3.14",
-  "main": "./build/prettier.config.js",
-  "types": "./build/prettier.config.d.ts",
+  "main": "./build/prettier.config.mjs",
+  "types": "./build/prettier.config.d.mts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./build/prettier.config.d.ts",
-        "default": "./build/prettier.config.js"
-      },
-      "require": {
-        "types": "./build/prettier.config.d.cts",
-        "default": "./build/prettier.config.cjs"
-      }
+      "types": "./build/prettier.config.d.mts",
+      "default": "./build/prettier.config.mjs"
     }
   },
   "files": [
@@ -35,9 +29,7 @@
     "prettier-config"
   ],
   "scripts": {
-    "build": "bun run build:cjs",
-    "build:cjs": "bun build.ts --cjs",
-    "build:esm-only": "bun build.ts",
+    "build": "tsdown",
     "format": "prettier . --write",
     "postinstall": "lefthook install",
     "prepare": "bun run build",
@@ -56,9 +48,11 @@
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
+    "@types/node": "^26.1.0",
     "bun-osv-scanner": "^2.0.0",
     "lefthook": "^2.1.9",
     "prettier": "^3.9.4",
+    "tsdown": "^0.22.3",
     "typescript": "^6.0.3"
   },
   "publishConfig": {

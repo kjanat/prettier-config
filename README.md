@@ -194,8 +194,11 @@ bun add -d @prettier/plugin-xml prettier-plugin-tailwindcss
 
 ### Module Resolution
 
+This package is ESM-only (no CommonJS build).
+
 - **ESM**: Add `"type": "module"` to `package.json`
-- **CommonJS**: Use `.cjs` extension for config
+- **CommonJS projects**: `require()` won't work; use a dynamic `import()` in your config, e.g.
+  `module.exports = import("@kjanat/prettier-config").then((m) => ({ ...m.default }))`
 - **TypeScript**: Set `moduleResolution` to `"bundler"` or `"node16"`
 
 ## Contributing

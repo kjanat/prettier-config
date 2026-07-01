@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import type { Config } from "prettier";
 import type { PluginOptions } from "prettier-plugin-tailwindcss";
 
@@ -6,6 +7,25 @@ import type { PluginOptions } from "prettier-plugin-tailwindcss";
  * @see https://github.com/tailwindlabs/prettier-plugin-tailwindcss
  */
 const tailwindOptions = {} satisfies PluginOptions;
+
+/**
+ * Every plugin is a peerDependency and gets installed automatically by
+ * npm/pnpm/bun. This only guards against package managers that don't
+ * auto-install peers (e.g. Yarn) or a plugin being deliberately removed —
+ * in either case, formatting continues for everything else instead of
+ * the whole config failing to load.
+ */
+function resolvablePlugins(names: string[]): string[] {
+  const require = createRequire(import.meta.url);
+  return names.filter((name) => {
+    try {
+      require.resolve(name);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+}
 
 /**
  * Prettier configuration with multi-language support.
@@ -22,7 +42,7 @@ const config = {
    *
    * @important Tailwind CSS plugin MUST be loaded last to ensure proper class sorting
    */
-  plugins: [
+  plugins: resolvablePlugins([
     "@prettier/plugin-xml",
     "prettier-plugin-go-template",
     "prettier-plugin-nginx",
@@ -32,7 +52,7 @@ const config = {
     "prettier-plugin-toml",
     // Load Tailwind CSS plugin last, always!
     "prettier-plugin-tailwindcss",
-  ],
+  ]),
   printWidth: 120,
   /** Collapse object literals when they fit on a single line */
   objectWrap: "preserve",
