@@ -151,7 +151,7 @@ runs:
           ]);
 
           // Add status section
-          summary.addBreak().addHeading('Status', 3);
+          summary.addHeading('Status', 3);
 
           if (!isTag) {
             summary.addRaw(`ℹ️ <b>Not a version tag</b> — Publishing skipped for non-tag triggers`);
