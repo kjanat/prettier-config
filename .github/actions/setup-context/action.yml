@@ -98,13 +98,7 @@ runs:
             try {
               core.info(`Checking registry for ${package}@${tagVersion}...`);
 
-              // NOTE: deliberately not using `bun info`/`npm view` here.
-              // When run from this checkout's own working directory,
-              // both can short-circuit to the local package.json instead
-              // of actually querying the registry when the package name
-              // matches — which made "already published" always true for
-              // this repo regardless of what was really published. Query
-              // the registry's JSON metadata endpoint directly instead.
+              // bun info/npm view here would resolve the local package.json instead of the registry.
               const registryToken = registryUrl.includes('npm.pkg.github.com')
                 ? process.env.GITHUB_TOKEN
                 : process.env.NPM_TOKEN;
@@ -162,23 +156,22 @@ runs:
           if (!isTag) {
             summary.addRaw(`ℹ️ <b>Not a version tag</b> — Publishing skipped for non-tag triggers`);
           } else if (alreadyPublished) {
-            summary.addRaw(`⏭️ <b>Already Published</b> — Version \u{60}${tagVersion}\u{60} already exists in registry`);
+            summary.addRaw(`⏭️ <b>Already Published</b> — Version <code>${tagVersion}</code> already exists in registry`);
           } else if (isPublished) {
-            summary.addRaw(`✅ <b>Ready to Publish</b> — Version \u{60}${tagVersion}\u{60} will be published (current: \u{60}${publishedVersion}\u{60})`);
+            summary.addRaw(`✅ <b>Ready to Publish</b> — Version <code>${tagVersion}</code> will be published (current: <code>${publishedVersion}</code>)`);
           } else {
-            summary.addRaw(`🚀 <b>First Publish</b> — Package \u{60}${package}\u{60} will be published for the first time`);
+            summary.addRaw(`🚀 <b>First Publish</b> — Package <code>${package}</code> will be published for the first time`);
           }
 
           // Add next steps hint
           if (shouldPublish) {
             summary.addBreak().addBreak();
             summary.addDetails('Next Steps',
-              `To publish this package:\n\n` +
-              `\u{60}\u{60}\u{60}yaml\n` +
+              'To publish this package:<br><br><pre><code>' +
               `- name: Publish to registry\n` +
               `  if: steps.setup-context.outputs.should-publish == 'true'\n` +
               `  run: bun publish --registry ${registryUrl}\n` +
-              `\u{60}\u{60}\u{60}\n`
+              '</code></pre>'
             );
           }
 
