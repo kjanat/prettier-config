@@ -77,19 +77,27 @@ jobs:
 
       - name: Publish to npm registry${{ github.event_name != 'push' && ' (dry run)' || '' }}
         if: matrix.registry == 'npm' && steps.context.outputs.should-publish == 'true'
-        run: npm publish --access public ${{ github.event_name != 'push' && '--dry-run' || '' }}
+        env:
+          DRY_RUN_FLAG: ${{ github.event_name != 'push' && '--dry-run' || '' }}
+        run: npm publish --access public $DRY_RUN_FLAG
 
       - name: Publish to GitHub Packages registry${{ github.event_name != 'push' && ' (dry run)' || '' }}
         if: matrix.registry == 'github' && steps.context.outputs.should-publish == 'true'
-        run: bun publish --access public --registry ${{ matrix.registry-url }} ${{ github.event_name != 'push' && '--dry-run' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_URL: ${{ matrix.registry-url }}
+          DRY_RUN_FLAG: ${{ github.event_name != 'push' && '--dry-run' || '' }}
+        run: bun publish --access public --registry "$REGISTRY_URL" $DRY_RUN_FLAG
 
       - name: Publishing skipped
         if: steps.context.outputs.should-publish != 'true'
+        env:
+          IS_TAG: ${{ steps.context.outputs.is-tag }}
+          TAG_VERSION: ${{ steps.context.outputs.tag-version }}
+          REGISTRY: ${{ matrix.registry }}
         run: |
-          if [[ "${{ steps.context.outputs.is-tag }}" == "true" ]]; then
-            echo "⏭️ Version ${{ steps.context.outputs.tag-version }} already published to ${{ matrix.registry }}"
+          if [[ "$IS_TAG" == "true" ]]; then
+            echo "⏭️ Version $TAG_VERSION already published to $REGISTRY"
           else
-            echo "ℹ️ Not a version tag - skipping ${{ matrix.registry }} publish"
+            echo "ℹ️ Not a version tag - skipping $REGISTRY publish"
           fi
